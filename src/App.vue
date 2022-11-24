@@ -8,17 +8,48 @@
               <!-- Lab 1 -->
               <b-tab title="LAB #1" active>
                 <b-card-text>
-                  <b-alert show>Швидке прибирання столиків у їдальні (25 столів).</b-alert>
+                  <b-alert show class="d-flex justify-content-between">
+                    <div>Швидке прибирання столиків у їдальні (25 столів).</div>
+                  </b-alert>
 
                   <div class="buttons-list mb-2">
-                    <b-button @click="randomTablePollution" class="m-1">Забруднити столи</b-button>
-                    <b-button class="m-1" variant="outline-primary">Запустити агента</b-button>
+                    <div>
+                      <b-button @click="randomTablePollution" class="m-1">Забруднити столи</b-button>
+                      <b-button @click="startAgent" class="m-1" variant="outline-primary">Запустити агента</b-button>
+                    </div>
+
+                    <div>
+                      <b-button @click="clearAllData" variant="outline" class="m-1">Очистити дані</b-button>
+                    </div>
+                  </div>
+
+                  <div class="table-description">
+                    <div class="table-description__item">
+                      <div class="table-description__item-icon table-description__item-green"></div>
+                      <div class="table-description__item-text"> Чисті столи (до 5%)</div>
+                    </div>
+
+                    <div class="table-description__item">
+                      <div class="table-description__item-icon table-description__item-blue"></div>
+                      <div class="table-description__item-text"> Трохи забруднені столи (5% - 50%)</div>
+                    </div>
+
+                    <div class="table-description__item">
+                      <div class="table-description__item-icon table-description__item-orange"></div>
+                      <div class="table-description__item-text"> Забруднені столи (50% - 80%)</div>
+                    </div>
+
+                    <div class="table-description__item">
+                      <div class="table-description__item-icon  table-description__item-red"></div>
+                      <div class="table-description__item-text"> Дуже забруднені столи (> 80%)</div>
+                    </div>
                   </div>
 
                   <div class="table-list">
                     <div v-for="(item, id) of tableList" :key="id"
                          class="table-list-item"
                          :class="{
+                          'table-list-item-green': item.pollution < 5,
                           'table-list-item-orange': item.pollution > 50,
                           'table-list-item-red': item.pollution > 80
                          }"
@@ -36,9 +67,10 @@
                   </div>
 
                   <hr>
-                  <div class="table-logs d-flex flex-wrap">
+                  <h4 v-if="logTree.length">Логування дій</h4>
+                  <div ref="loggerList" class="table-logs d-flex flex-wrap-reverse">
                     <div v-for="(message, id) of logTree" :key="id">
-                      {{ message}} ->
+                      {{ message }} ->
                     </div>
                   </div>
 
@@ -68,6 +100,9 @@ export default {
       tableListRequiredAmount: 25,
       tableList: null,
       logTree: [],
+
+      intervalForPollutions: null,
+      intervalForCleaning: null
     }
   },
   mounted() {
@@ -93,21 +128,73 @@ export default {
       this.pushToLogTree('Столи почали забруднюватись');
     },
 
+    startAgent() {
+
+      this.pushToLogTree('Агент запущений');
+
+      this.setIntervalForTablePollution();
+      this.setIntervalForCleaning();
+    },
+
+    setIntervalForTablePollution() {
+      this.intervalForPollutions = setInterval(() => {
+        this.pushToLogTree('Cтоли продовжують забруднюватись');
+
+        this.tableList.forEach(item => {
+          if (item.pollution < 100) {
+            item.pollution = item.pollution + Math.floor(Math.random() * 3) + 1;
+          }
+
+          if (item.pollution >= 100) {
+            item.pollution = 100;
+          }
+        });
+      }, 1000);
+    },
+
+    setIntervalForCleaning() {
+      this.intervalForCleaning = setInterval(() => {
+
+        let maxValue = 0;
+        let maxValueIndex = null;
+        this.tableList.forEach((item, index) => {
+          if (item.pollution > maxValue) {
+            maxValue = item.pollution;
+            maxValueIndex = index;
+          }
+        });
+
+        this.pushToLogTree(`Прибраний стіл №${maxValueIndex + 1} (було забруднено ${maxValue}%)`)
+
+        this.tableList[maxValueIndex].pollution = 0;
+
+      }, 1000)
+    },
+
     clearAllData() {
       this.initTables();
       this.logTree = [];
+
+      clearInterval(this.intervalForPollutions);
+      clearInterval(this.setIntervalForCleaning);
     },
 
     pushToLogTree(message) {
-      this.logTree.push(message)
+      this.logTree.push(message);
+
+      // this.$refs.loggerList.offsetTop // TODO: add scroll to top/bottom
     }
   }
 }
 </script>
 
 <style>
+#app {
+  min-height: 101vh;
+}
+
 .tabs-list {
-  min-height: 500px;
+  min-height: 450px;
 }
 
 .tabs-list li {
@@ -128,15 +215,58 @@ export default {
   border-radius: 30px;
 }
 
-.table-list-item-orange{
-  background: coral;
+.table-list-item-green {
+  background: lawngreen;
 }
 
+.table-list-item-orange {
+  background: coral;
+}
 
 .table-list-item-red {
   background: darkred;
 }
 
+.buttons-list {
+  display: flex;
+  justify-content: space-between;
+}
+
+.table-description {
+  display: flex;
+  align-items: center;
+  margin-bottom: 10px;
+}
+
+.table-description__item {
+  display: flex;
+  align-items: center;
+  margin-right: 20px;
+}
+
+.table-description__item-icon {
+  width: 10px;
+  height: 10px;
+  border-radius: 50%;
+  margin-right: 5px;
+  flex-shrink: 0;
+}
+
+.table-description__item-green {
+  background: lawngreen;
+}
+
+.table-description__item-blue {
+  background: lightblue;
+}
+
+.table-description__item-orange {
+  background: coral;
+}
+
+.table-description__item-red {
+  background: darkred;
+}
 
 .table-list-item img {
   width: 100%;
