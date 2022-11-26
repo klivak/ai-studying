@@ -6,7 +6,7 @@
           <b-card no-body>
             <b-tabs pills card vertical class="tabs-list">
               <!-- Lab 1 -->
-              <b-tab title="LAB #1" >
+              <b-tab title="LAB #1" active>
                 <b-card-text>
                   <b-alert show class="d-flex justify-content-between">
                     <div>Швидке прибирання столиків у їдальні (25 столів).</div>
@@ -79,7 +79,7 @@
 
               <!-- Lab 2 -->
               <!-- TODO: move active to first lab -->
-              <b-tab title="LAB #2" active>
+              <b-tab title="LAB #2" >
                 <lab-second></lab-second>
               </b-tab>
             </b-tabs>
