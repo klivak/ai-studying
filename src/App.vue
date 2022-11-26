@@ -6,7 +6,7 @@
           <b-card no-body>
             <b-tabs pills card vertical class="tabs-list">
               <!-- Lab 1 -->
-              <b-tab title="LAB #1" active>
+              <b-tab title="LAB #1" >
                 <b-card-text>
                   <b-alert show class="d-flex justify-content-between">
                     <div>Швидке прибирання столиків у їдальні (25 столів).</div>
@@ -78,8 +78,9 @@
               </b-tab>
 
               <!-- Lab 2 -->
-              <b-tab title="LAB #2">
-                <b-card-text>Lab 2 content</b-card-text>
+              <!-- TODO: move active to first lab -->
+              <b-tab title="LAB #2" active>
+                <lab-second></lab-second>
               </b-tab>
             </b-tabs>
           </b-card>
@@ -93,8 +94,10 @@
 
 <script>
 
+import LabSecond from "@/components/Lab2";
 export default {
   name: 'App',
+  components: {LabSecond},
   data() {
     return {
       tableListRequiredAmount: 25,
